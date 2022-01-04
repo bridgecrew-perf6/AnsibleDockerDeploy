@@ -1,0 +1,21 @@
+---
+- name: install docker 
+  hosts: all
+  become: yes
+  tasks: 
+
+   - debug:
+        msg: "{{ ansible_architecture }}"
+
+   - name: start docker service  
+     service:
+      name: docker
+      state: restarted
+      enabled: yes
+     when: ansible_facts['docker0']['active'] == false
+
+          
+                  
+           
+      
+      
