@@ -4,18 +4,54 @@
   become: yes
   tasks: 
 
-   - debug:
-        msg: "{{ ansible_architecture }}"
-
-   - name: start docker service  
-     service:
-      name: docker
-      state: restarted
-      enabled: yes
-     when: ansible_facts['docker0']['active'] == false
-
-          
-                  
-           
+   - name: remove docker versions if installed
+     yum:
+      name:  
+       - docker 
+       - docker-client 
+       - docker-client-latest 
+       - docker-common 
+       - docker-latest 
+       - docker-latest-logrotate 
+       - docker-logrotate 
+       - docker-engine
+      state: absent
+     
       
+   - name: install yum utils
+     yum: 
+       name: yum-utils
+       state: latest
+     become: yes
+       
+   - name : add repo docker
+     get_url:
+       url: https://download.docker.com/linux/centos/docker-ce.repo
+       dest: /etc/yum.repos.d/docer-ce.repo
+     
+     
+   - name: Enable Docker Edge repo
+     ini_file:
+        dest: /etc/yum.repos.d/docer-ce.repo
+        section: 'docker-ce-edge'
+        option: enabled
+        value: 0
+     
+     
+   - name : install docker componenents
+     yum:
+      name:
+       - docker-ce 
+        - docker-ce-cli 
+        - containerd.io
+      update-cache: yes 
       
+   - name: run docker service
+     service: 
+         name: docker
+         state: started
+         enabled: yes
+
+   - name: print all hosts facts 
+     ansible.builtin.debug:
+      var: ansible_facts
